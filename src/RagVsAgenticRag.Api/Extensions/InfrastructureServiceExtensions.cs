@@ -8,6 +8,14 @@ namespace RagVsAgenticRag.Api.Extensions;
 
 public static class InfrastructureServiceExtensions
 {
+    private const string OllamaHttpClientName = "Ollama";
+
+    /// <summary>
+    /// Registers the AI providers, vector store, database, and application services.
+    /// </summary>
+    /// <param name="services">The dependency-injection service collection.</param>
+    /// <param name="configuration">The application configuration containing provider settings.</param>
+    /// <returns>The same service collection for fluent startup registration.</returns>
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -33,6 +41,11 @@ public static class InfrastructureServiceExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers the configured chat and embedding clients, including the agent iteration limit.
+    /// </summary>
+    /// <param name="services">The dependency-injection service collection.</param>
+    /// <param name="configuration">The application configuration containing AI provider settings.</param>
     private static void AddAiClients(IServiceCollection services, IConfiguration configuration)
     {
         var provider = configuration["AI:Provider"] ?? "ollama";
@@ -55,13 +68,28 @@ public static class InfrastructureServiceExtensions
         }
 
         var endpoint = configuration["AI:Ollama:Endpoint"] ?? "http://localhost:11434";
+        var requestTimeout = configuration.GetValue(
+            "AI:Ollama:RequestTimeout",
+            TimeSpan.FromMinutes(5));
+
+        // Local tool-calling requests can exceed HttpClient's 100-second default timeout.
+        services.AddHttpClient(OllamaHttpClientName, client =>
+        {
+            client.BaseAddress = new Uri(endpoint);
+            client.Timeout = requestTimeout;
+        });
 
         services.AddChatClient(
-                (IChatClient)new OllamaApiClient(endpoint, configuration["AI:Ollama:ChatModel"]!))
+                serviceProvider => (IChatClient)new OllamaApiClient(
+                    serviceProvider.GetRequiredService<IHttpClientFactory>()
+                        .CreateClient(OllamaHttpClientName),
+                    configuration["AI:Ollama:ChatModel"]!))
             .UseFunctionInvocation(configure: c => c.MaximumIterationsPerRequest = maxIterations);
 
-        services.AddEmbeddingGenerator(
-            (IEmbeddingGenerator<string, Embedding<float>>)new OllamaApiClient(
-                endpoint, configuration["AI:Ollama:EmbeddingModel"]!));
+        services.AddEmbeddingGenerator<string, Embedding<float>>(
+            serviceProvider => new OllamaApiClient(
+                serviceProvider.GetRequiredService<IHttpClientFactory>()
+                    .CreateClient(OllamaHttpClientName),
+                configuration["AI:Ollama:EmbeddingModel"]!));
     }
 }

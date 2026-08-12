@@ -4,7 +4,7 @@ namespace RagVsAgenticRag.Api.Models;
 
 public record AskRequest(
     [property: Required, MinLength(3)] string Question,
-    int? TopK = null);
+    [property: Range(1, 50)] int? TopK = null);
 
 public record RagSource(string Source, int ChunkIndex, float Score);
 

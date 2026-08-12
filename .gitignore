@@ -6,3 +6,22 @@ obj/
 .DS_Store
 appsettings.Local.json
 .env
+
+# Graphify
+graphify-out/
+
+# VS Code
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Testing & CI
+TestResults/
+coverage/
+
+# Logs
+*.log
+compliance-mcp.log
