@@ -33,7 +33,7 @@ public class InfrastructureServiceExtensionsTests
         // Resolve the real named client used by both Ollama adapters.
         using var serviceProvider = services.BuildServiceProvider();
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-        var client = factory.CreateClient("Ollama");
+        using var client = factory.CreateClient("Ollama");
 
         Assert.Equal(new Uri("http://localhost:11434"), client.BaseAddress);
         Assert.Equal(TimeSpan.FromMinutes(7), client.Timeout);
