@@ -1,0 +1,32 @@
+[
+  {
+    "id": "q1-simple",
+    "category": "simple",
+    "question": "How long do I have to return a product under the current 2025 policy?"
+  },
+  {
+    "id": "q2-simple",
+    "category": "simple",
+    "question": "What warranty do backpacks have?"
+  },
+  {
+    "id": "q3-multihop",
+    "category": "multi-hop",
+    "question": "Compare the 2024 and 2025 return policies: what changed for opened items and the restocking fee?"
+  },
+  {
+    "id": "q4-multihop",
+    "category": "multi-hop",
+    "question": "A Nordwind+ Gold member bought a NaviTrail GPS in March 2025. How many days do they have to return it, and how will they be refunded?"
+  },
+  {
+    "id": "q5-tricky",
+    "category": "tricky",
+    "question": "The zipper on my Trek 45 backpack broke two years after purchase. Can I still do anything about it?"
+  },
+  {
+    "id": "q6-out-of-domain",
+    "category": "out-of-domain",
+    "question": "What is the capital of Australia?"
+  }
+]
