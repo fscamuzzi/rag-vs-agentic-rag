@@ -67,10 +67,20 @@ public static class InfrastructureServiceExtensions
             return;
         }
 
-        var endpoint = configuration["AI:Ollama:Endpoint"] ?? "http://localhost:11434";
+        var endpointValue = configuration["AI:Ollama:Endpoint"] ?? "http://localhost:11434";
         var requestTimeout = configuration.GetValue(
             "AI:Ollama:RequestTimeout",
             TimeSpan.FromMinutes(5));
+
+        // Fail at startup when Ollama transport settings cannot produce valid HTTP requests.
+        if (!Uri.TryCreate(endpointValue, UriKind.Absolute, out var endpoint) ||
+            endpoint.Scheme is not (Uri.UriSchemeHttp or Uri.UriSchemeHttps))
+            throw new InvalidOperationException(
+                "AI:Ollama:Endpoint must be an absolute HTTP or HTTPS URI.");
+
+        if (requestTimeout <= TimeSpan.Zero)
+            throw new InvalidOperationException(
+                "AI:Ollama:RequestTimeout must be greater than zero.");
 
         // Local tool-calling requests can exceed HttpClient's 100-second default timeout.
         services.AddHttpClient(OllamaHttpClientName, client =>
@@ -79,6 +89,7 @@ public static class InfrastructureServiceExtensions
             client.Timeout = requestTimeout;
         });
 
+        // Register chat with function invocation so the model can drive agent tools.
         services.AddChatClient(
                 serviceProvider => (IChatClient)new OllamaApiClient(
                     serviceProvider.GetRequiredService<IHttpClientFactory>()
@@ -86,6 +97,7 @@ public static class InfrastructureServiceExtensions
                     configuration["AI:Ollama:ChatModel"]!))
             .UseFunctionInvocation(configure: c => c.MaximumIterationsPerRequest = maxIterations);
 
+        // Register embeddings on the same managed transport for ingestion and retrieval.
         services.AddEmbeddingGenerator<string, Embedding<float>>(
             serviceProvider => new OllamaApiClient(
                 serviceProvider.GetRequiredService<IHttpClientFactory>()
