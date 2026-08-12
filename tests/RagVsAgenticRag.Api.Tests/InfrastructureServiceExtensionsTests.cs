@@ -60,6 +60,8 @@ public class InfrastructureServiceExtensionsTests
                 ["Mongo:Database"] = "test"
             })
             .Build();
+
+        // Create the service collection that receives the production registrations.
         var services = new ServiceCollection();
 
         // Registration must reject invalid configuration before the host starts.
@@ -88,6 +90,8 @@ public class InfrastructureServiceExtensionsTests
                 ["Mongo:Database"] = "test"
             })
             .Build();
+
+        // Create the service collection that receives the production registrations.
         var services = new ServiceCollection();
 
         // Registration must reject invalid configuration before the host starts.

@@ -74,7 +74,7 @@ public static class InfrastructureServiceExtensions
 
         // Fail at startup when Ollama transport settings cannot produce valid HTTP requests.
         if (!Uri.TryCreate(endpointValue, UriKind.Absolute, out var endpoint) ||
-            endpoint.Scheme is not (Uri.UriSchemeHttp or Uri.UriSchemeHttps))
+            endpoint.Scheme != Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps)
             throw new InvalidOperationException(
                 "AI:Ollama:Endpoint must be an absolute HTTP or HTTPS URI.");
 
@@ -85,7 +85,7 @@ public static class InfrastructureServiceExtensions
         // Local tool-calling requests can exceed HttpClient's 100-second default timeout.
         services.AddHttpClient(OllamaHttpClientName, client =>
         {
-            client.BaseAddress = new Uri(endpoint);
+            client.BaseAddress = endpoint;
             client.Timeout = requestTimeout;
         });
 
